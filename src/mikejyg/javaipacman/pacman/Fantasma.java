@@ -20,9 +20,10 @@
 package mikejyg.javaipacman.pacman;
 
 import java.lang.Error;
+import java.util.ArrayList;
 import java.awt.*;
 
-public class cghost
+public class Fantasma
 {
 	final int IN=0;
 	final int OUT=1;
@@ -37,7 +38,7 @@ public class cghost
 
 	cspeed speed=new cspeed();
 
-	int iX, iY, iDir, iStatus;
+	int posX, posY, direccion, iStatus;
 	int iBlink, iBlindCount;
 
 	// random calculation factors
@@ -49,18 +50,18 @@ public class cghost
 	Graphics graphics;
 
 	// the maze the ghosts knows
-	cmaze maze;
+	Laberinto laberinto;
 
 	// the ghost image
 	Image imageGhost; 
 	Image imageBlind;
 	Image imageEye;
 
-	cghost(Window a, Graphics g, cmaze m, Color color)
+	Fantasma(Window a, Graphics g, Laberinto m, Color color)
 	{
 		applet=a;
 		graphics=g;
-		maze=m;
+		laberinto=m;
 
 		imageGhost=applet.createImage(18,18);
 		cimage.drawGhost(imageGhost, 0, color);
@@ -76,8 +77,8 @@ public class cghost
 	{
 		if (initialPosition>=2)
 			initialPosition++;
-		iX=(8+initialPosition)*16; iY=8*16;
-		iDir=3;
+		posX=(8+initialPosition)*16; posY=8*16;
+		direccion=3;
 		iStatus=IN;
 
 		blindCount=INIT_BLIND_COUNT/((round+1)/2);
@@ -87,17 +88,17 @@ public class cghost
 
 	public void draw()
 	{
-		maze.DrawDot(iX/16, iY/16);
-		maze.DrawDot(iX/16+(iX%16>0?1:0), iY/16+(iY%16>0?1:0));
+		laberinto.DrawDot(posX/16, posY/16);
+		laberinto.DrawDot(posX/16+(posX%16>0?1:0), posY/16+(posY%16>0?1:0));
 
 		if (iStatus==BLIND && iBlink==1 && iBlindCount%32<16)
-			graphics.drawImage(imageGhost, iX-1, iY-1, applet);
+			graphics.drawImage(imageGhost, posX-1, posY-1, applet);
 		else if (iStatus==OUT || iStatus==IN)
-			graphics.drawImage(imageGhost, iX-1, iY-1, applet);
+			graphics.drawImage(imageGhost, posX-1, posY-1, applet);
 		else if (iStatus==BLIND)
-			graphics.drawImage(imageBlind, iX-1, iY-1, applet);
+			graphics.drawImage(imageBlind, posX-1, posY-1, applet);
 		else 
-			graphics.drawImage(imageEye, iX-1, iY-1, applet);
+			graphics.drawImage(imageEye, posX-1, posY-1, applet);
 	}  
 
 	public void move(int iPacX, int iPacY, int iPacDir)
@@ -117,34 +118,34 @@ public class cghost
 			// no move
 			return;
 
-		if (iX%16==0 && iY%16==0)
+		if (posX%16==0 && posY%16==0)
 			// determine direction
 		{
 			switch (iStatus)
 			{
 			case IN:
-				iDir=INSelect();
+				direccion=INSelect();
 				break;
 			case OUT:
-				iDir=OUTSelect(iPacX, iPacY, iPacDir);
+				direccion=moverFantasmaFueraDeJaula(iPacX, iPacY, iPacDir);
 				break;
 			case BLIND:
-				iDir=BLINDSelect(iPacX, iPacY, iPacDir);
+				direccion=BLINDSelect(iPacX, iPacY, iPacDir);
 				break;
 			case EYE:
-				iDir=EYESelect();
+				direccion=EYESelect();
 			}
 		}
 
 		if (iStatus!=EYE)
 		{
-			iX+= ctables.iXDirection[iDir];
-			iY+= ctables.iYDirection[iDir];
+			posX+= LaberintoUtils.direccionesEjeX[direccion];
+			posY+= LaberintoUtils.direccionesEjeY[direccion];
 		}
 		else
 		{	
-			iX+=2* ctables.iXDirection[iDir];
-			iY+=2* ctables.iYDirection[iDir];
+			posX+=2* LaberintoUtils.direccionesEjeX[direccion];
+			posY+=2* LaberintoUtils.direccionesEjeY[direccion];
 		}
 
 	}
@@ -158,9 +159,9 @@ public class cghost
 
 		for (i=0; i<4; i++)
 		{
-			iM=maze.iMaze[iY/16 + ctables.iYDirection[i]]
-			              [iX/16 + ctables.iXDirection[i]];
-			if (iM!=cmaze.WALL && i != ctables.iBack[iDir] )
+			iM=laberinto.laberinto[posY/16 + LaberintoUtils.direccionesEjeY[i]]
+			              [posX/16 + LaberintoUtils.direccionesEjeX[i]];
+			if (iM!=Laberinto.WALL && i != LaberintoUtils.iBack[direccion] )
 			{
 				iDirTotal++;
 			}
@@ -168,96 +169,128 @@ public class cghost
 		// randomly select a direction
 		if (iDirTotal!=0)
 		{
-			iRand=cuty.RandSelect(iDirTotal);
+			iRand=Utils.RandSelect(iDirTotal);
 			if (iRand>=iDirTotal)
 				throw new Error("iRand out of range");
 			//				exit(2);
 			for (i=0; i<4; i++)
 			{
-				iM=maze.iMaze[iY/16+ ctables.iYDirection[i]]
-				              [iX/16+ ctables.iXDirection[i]];
-				if (iM!=cmaze.WALL && i != ctables.iBack[iDir] )
+				iM=laberinto.laberinto[posY/16+ LaberintoUtils.direccionesEjeY[i]]
+				              [posX/16+ LaberintoUtils.direccionesEjeX[i]];
+				if (iM!=Laberinto.WALL && i != LaberintoUtils.iBack[direccion] )
 				{
 					iRand--;
 					if (iRand<0)
 						// the right selection
 					{
-						if (iM== cmaze.DOOR)
+						if (iM== Laberinto.DOOR)
 							iStatus=OUT;
-						iDir=i;	break;
+						direccion=i;	break;
 					}
 				}
 			}
 		}	
-		return(iDir);	
+		return(direccion);	
 	}
 
-	public int OUTSelect(int iPacX, int iPacY, int iPacDir)
+	public int moverFantasmaFueraDeJaula(int pacmanPosX, int pacmanPosY, int pacmanDireccion)
 	// count available directions
 	throws Error
 	{
-		int iM,i,iRand;
-		int iDirTotal=0;
-		int[] iDirCount=new int [4];
+		int celda,i,iRand;
+		int totalPesoDirecciones=0;
+		int[] pesoDireccion=new int [4];
+		ArrayList<Integer> posibilidad = new ArrayList<Integer>();
 
 		for (i=0; i<4; i++)
 		{
-			iDirCount[i]=0;
-			iM=maze.iMaze[iY/16 + ctables.iYDirection[i]]
-			              [iX/16+ ctables.iXDirection[i]];
-			if (iM!=cmaze.WALL && i!= ctables.iBack[iDir] && iM!= cmaze.DOOR )
+			pesoDireccion[i]=0;
+			celda=laberinto.laberinto[posY/16 + LaberintoUtils.direccionesEjeY[i]]
+			              [posX/16+ LaberintoUtils.direccionesEjeX[i]];
+			if (celda!=Laberinto.WALL && i!= LaberintoUtils.iBack[direccion] && celda!= Laberinto.DOOR )
 				// door is not accessible for OUT
 			{
-				iDirCount[i]++;
-				iDirCount[i]+=iDir==iPacDir?
-						DIR_FACTOR:0;
+				posibilidad.add(i);
+				pesoDireccion[i]++;
+				if (direccion==pacmanDireccion){
+					pesoDireccion[i]+=DIR_FACTOR;	
+				} else {
+					pesoDireccion[i]+=0;
+				}
 				switch (i)
 				{
 				case 0:	// right
-					iDirCount[i] += iPacX > iX ? POS_FACTOR:0;
+					/*
+					 * Si el pacman esta mas a la derecha, pondero mover a la derecha
+					 */
+					if (pacmanPosX > posX){
+						pesoDireccion[i]+=POS_FACTOR;	
+					} else {
+						pesoDireccion[i]+=0;
+					}
 					break;
 				case 1:	// up
-					iDirCount[i]+=iPacY<iY?
-							POS_FACTOR:0;
+					/*
+					 * Si el pacman esta mas arriba que ell fantasma, pondero UP
+					 */
+					if (pacmanPosY < posY){
+						pesoDireccion[i]+=POS_FACTOR;	
+					} else {
+						pesoDireccion[i]+=0;
+					}
 					break;
 				case 2:	// left
-					iDirCount[i]+=iPacX<iX?
-							POS_FACTOR:0;
+					/*
+					 * Si el pacman esta a la izq, pondero izq
+					 */
+					if (pacmanPosX<posX){
+						pesoDireccion[i]+=POS_FACTOR;	
+					} else {
+						pesoDireccion[i]+=0;
+					}
 					break;
 				case 3:	// down
-					iDirCount[i]+=iPacY>iY?
-							POS_FACTOR:0;
+					/*
+					 * Si el pacman esta mas abajo, pondero ir para abajo
+					 */
+					if (pacmanPosY>posY){
+						pesoDireccion[i]+=POS_FACTOR;	
+					} else {
+						pesoDireccion[i]+=0;
+					}
 					break;
 				}
-				iDirTotal+=iDirCount[i];
+				totalPesoDirecciones+=pesoDireccion[i];
 			}
 		}	
 		// randomly select a direction
-		if (iDirTotal!=0)
+		if (totalPesoDirecciones!=0)
 		{	
-			iRand=cuty.RandSelect(iDirTotal);
-			if (iRand>=iDirTotal)
+			
+			iRand=Utils.RandSelect(totalPesoDirecciones);
+			if (iRand>=totalPesoDirecciones)
 				throw new Error("iRand out of range");
-			// exit(2);
 			for (i=0; i<4; i++)
 			{
-				iM=maze.iMaze[iY/16+ ctables.iYDirection[i]]
-				              [iX/16+ ctables.iXDirection[i]];
-				if (iM!=cmaze.WALL && i!= ctables.iBack[iDir] && iM!= cmaze.DOOR )
+				celda=laberinto.laberinto[posY/16+ LaberintoUtils.direccionesEjeY[i]]
+				              [posX/16+ LaberintoUtils.direccionesEjeX[i]];
+				if (celda!=Laberinto.WALL && i!= LaberintoUtils.iBack[direccion] && celda!= Laberinto.DOOR )
 				{	
-					iRand-=iDirCount[i];
+					iRand-=pesoDireccion[i];
 					if (iRand<0)
 						// the right selection
 					{
-						iDir=i;	break;
+						direccion=i;	break;
 					}
 				}
-			}	
+			}
+			iRand=Utils.RandSelect(posibilidad.size());
+			direccion = posibilidad.get(iRand);
 		}
 		else	
 			throw new Error("iDirTotal out of range");
 		// exit(1);
-		return(iDir);
+		return(direccion);
 	}
 
 	public void blind()
@@ -268,17 +301,17 @@ public class cghost
 			iBlindCount=blindCount;
 			iBlink=0;
 			// reverse
-			if (iX%16!=0 || iY%16!=0)
+			if (posX%16!=0 || posY%16!=0)
 			{
-				iDir= ctables.iBack[iDir];
+				direccion= LaberintoUtils.iBack[direccion];
 				// a special condition:
 				// when ghost is leaving home, it can not go back
 				// while becoming blind
 				int iM;
-				iM=maze.iMaze[iY/16+ ctables.iYDirection[iDir]]
-				              [iX/16+ ctables.iXDirection[iDir]];
-				if (iM == cmaze.DOOR)
-					iDir=ctables.iBack[iDir];
+				iM=laberinto.laberinto[posY/16+ LaberintoUtils.direccionesEjeY[direccion]]
+				              [posX/16+ LaberintoUtils.direccionesEjeX[direccion]];
+				if (iM == Laberinto.DOOR)
+					direccion=LaberintoUtils.iBack[direccion];
 			}
 		}
 	}
@@ -294,28 +327,28 @@ public class cghost
 		for (i=0; i<4; i++)
 		{
 			iDirCount[i]=0;
-			iM=maze.iMaze[iY/16 + ctables.iYDirection[i]]
-			              [iX/16+ctables.iXDirection[i]];
-			if (iM!= cmaze.WALL && i!= ctables.iBack[iDir])
+			iM=laberinto.laberinto[posY/16 + LaberintoUtils.direccionesEjeY[i]]
+			              [posX/16+LaberintoUtils.direccionesEjeX[i]];
+			if (iM!= Laberinto.WALL && i!= LaberintoUtils.iBack[direccion])
 			{
 				iDirCount[i]++;
 				switch (i)
 				{
 				// door position 10,6
 				case 0:	// right
-					iDirCount[i]+=160>iX?
+					iDirCount[i]+=160>posX?
 							POS_FACTOR:0;
 					break;
 				case 1:	// up
-					iDirCount[i]+=96<iY?
+					iDirCount[i]+=96<posY?
 							POS_FACTOR:0;
 					break;
 				case 2:	// left
-					iDirCount[i]+=160<iX?
+					iDirCount[i]+=160<posX?
 							POS_FACTOR:0;
 					break;
 				case 3:	// down
-					iDirCount[i]+=96>iY?
+					iDirCount[i]+=96>posY?
 							POS_FACTOR:0;
 					break;
 				}
@@ -325,33 +358,33 @@ public class cghost
 		// randomly select a direction
 		if (iDirTotal!=0)
 		{
-			iRand= cuty.RandSelect(iDirTotal);
+			iRand= Utils.RandSelect(iDirTotal);
 			if (iRand>=iDirTotal)
 				throw new Error("RandSelect out of range");
 			//				exit(2);
 			for (i=0; i<4; i++)
 			{
-				iM=maze.iMaze[iY/16+ ctables.iYDirection[i]]
-				              [iX/16+ ctables.iXDirection[i]];
-				if (iM!= cmaze.WALL && i!= ctables.iBack[iDir])
+				iM=laberinto.laberinto[posY/16+ LaberintoUtils.direccionesEjeY[i]]
+				              [posX/16+ LaberintoUtils.direccionesEjeX[i]];
+				if (iM!= Laberinto.WALL && i!= LaberintoUtils.iBack[direccion])
 				{
 					iRand-=iDirCount[i];
 					if (iRand<0)
 						// the right selection
 					{
-						if (iM== cmaze.DOOR)
+						if (iM== Laberinto.DOOR)
 							iStatus=IN;
-						iDir=i;	break;
+						direccion=i;	break;
 					}
 				}
 			}
 		}
 		else
 			throw new Error("iDirTotal out of range");
-		return(iDir);	
+		return(direccion);	
 	}	
 
-	public int BLINDSelect(int iPacX, int iPacY, int iPacDir)
+	public int BLINDSelect(int pacmanPosX, int pacmanPosY, int pacmanDireccion)
 	// count available directions
 	throws Error
 	{
@@ -362,29 +395,42 @@ public class cghost
 		for (i=0; i<4; i++)
 		{
 			iDirCount[i]=0;
-			iM=maze.iMaze[iY/16+ ctables.iYDirection[i]][iX/16+ ctables.iXDirection[i]];
-			if (iM != cmaze.WALL && i != ctables.iBack[iDir] && iM != cmaze.DOOR)
+			iM=laberinto.laberinto[posY/16+ LaberintoUtils.direccionesEjeY[i]][posX/16+ LaberintoUtils.direccionesEjeX[i]];
+			if (iM != Laberinto.WALL && i != LaberintoUtils.iBack[direccion] && iM != Laberinto.DOOR)
 				// door is not accessible for OUT
 			{
 				iDirCount[i]++;
-				iDirCount[i]+=iDir==iPacDir?
+				iDirCount[i]+=direccion==pacmanDireccion?
 						DIR_FACTOR:0;
 				switch (i)
 				{
-				case 0:	// right
-					iDirCount[i]+=iPacX<iX?
+				case 0:	
+					/*
+					 * Si el fantasma esta mas a la derecha que el pacman, apoyamos ese movimiento,
+					 * sino no (va hacia el pacman)
+					 */
+					iDirCount[i]+=pacmanPosX<posX?
 							POS_FACTOR:0;
 					break;
 				case 1:	// up
-					iDirCount[i]+=iPacY>iY?
+					/*
+					 * si la posicion del pacman esta mas abajo que el fantama, me muevo p arriba
+					 */
+					iDirCount[i]+=pacmanPosY>posY?
 							POS_FACTOR:0;
 					break;
 				case 2:	// left
-					iDirCount[i]+=iPacX>iX?
+					/*
+					 * si la posicion del pacman está mas a la derecha, tira mover a la izq
+					 */
+					iDirCount[i]+=pacmanPosX>posX?
 							POS_FACTOR:0;
 					break;
 				case 3:	// down
-					iDirCount[i]+=iPacY<iY?
+					/*
+					 * Si el pacman esta mas arriba, muevo para abajo
+					 */
+					iDirCount[i]+=pacmanPosY<posY?
 							POS_FACTOR:0;
 					break;
 				}
@@ -394,36 +440,36 @@ public class cghost
 		// randomly select a direction
 		if (iDirTotal!=0)
 		{
-			iRand=cuty.RandSelect(iDirTotal);
+			iRand=Utils.RandSelect(iDirTotal);
 			if (iRand>=iDirTotal)
 				throw new Error("RandSelect out of range");
 			//				exit(2);
 			for (i=0; i<4; i++)
 			{	
-				iM=maze.iMaze[iY/16+ ctables.iYDirection[i]]
-				              [iX/16+ ctables.iXDirection[i]];
-				if (iM!= cmaze.WALL && i!= ctables.iBack[iDir])
+				iM=laberinto.laberinto[posY/16+ LaberintoUtils.direccionesEjeY[i]]
+				              [posX/16+ LaberintoUtils.direccionesEjeX[i]];
+				if (iM!= Laberinto.WALL && i!= LaberintoUtils.iBack[direccion])
 				{	
 					iRand-=iDirCount[i];
 					if (iRand<0)
 						// the right selection
 					{
-						iDir=i;	break;
+						direccion=i;	break;
 					}
 				}
 			}
 		}
 		else
 			throw new Error("iDirTotal out of range");
-		return(iDir);
+		return(direccion);
 	}
 
 	// return 1 if caught the pac!
 	// return 2 if being caught by pac
 	int testCollision(int iPacX, int iPacY)
 	{
-		if (iX<=iPacX+2 && iX>=iPacX-2
-				&& iY<=iPacY+2 && iY>=iPacY-2)
+		if (posX<=iPacX+2 && posX>=iPacX-2
+				&& posY<=iPacY+2 && posY>=iPacY-2)
 		{
 			switch (iStatus)
 			{
@@ -431,8 +477,8 @@ public class cghost
 				return(1);
 			case BLIND:
 				iStatus=EYE;
-				iX=iX/4*4;
-				iY=iY/4*4;
+				posX=posX/4*4;
+				posY=posY/4*4;
 				return(2);
 			}	
 		}

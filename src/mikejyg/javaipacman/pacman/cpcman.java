@@ -53,10 +53,10 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 	Graphics offScreenG;
 
 	// the objects    
-	cmaze maze;
+	Laberinto maze;
 	cpac pac;
 	cpowerdot powerDot;
-	cghost [] ghosts;
+	Fantasma [] ghosts;
 
 	// game counters
 	final int PAcLIVE=3;
@@ -153,17 +153,17 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 	public void initImages()
 	{
 		// initialize off screen drawing canvas
-		offScreen=createImage(cmaze.iWidth, cmaze.iHeight); 
+		offScreen=createImage(Laberinto.iWidth, Laberinto.iHeight); 
 		if (offScreen==null)
 			System.out.println("createImage failed");
 		offScreenG=offScreen.getGraphics();
 
 		// initialize maze object
-		maze = new cmaze(this, offScreenG);
+		maze = new Laberinto(this, offScreenG);
 
 		// initialize ghosts object
 		// 4 ghosts
-		ghosts = new cghost[4];
+		ghosts = new Fantasma[4];
 		for (int i=0; i<4; i++)
 		{
 			Color color;
@@ -175,7 +175,7 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 				color=Color.white;
 			else 
 				color=Color.orange;
-			ghosts[i]=new cghost(this, offScreenG, maze, color);
+			ghosts[i]=new Fantasma(this, offScreenG, maze, color);
 		}
 
 		// initialize power dot object
@@ -239,7 +239,7 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 		maze.draw();	// draw maze in off screen buffer
 
 		pac.start();
-		pacKeyDir=ctables.DOWN;
+		pacKeyDir=LaberintoUtils.DOWN;
 		for (int i=0; i<4; i++)
 			ghosts[i].start(i,round);
 
@@ -441,7 +441,7 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 			switch (gameState)
 			{
 			case STARTWAIT: 
-				if (pacKeyDir==ctables.UP)	// the key to start game
+				if (pacKeyDir==LaberintoUtils.UP)	// the key to start game
 					gameState=RUNNING;
 				else
 					return;
@@ -459,7 +459,7 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 					startGame();
 				gameState=STARTWAIT;
 				wait=WAITCOUNT;
-				pacKeyDir=ctables.DOWN;
+				pacKeyDir=LaberintoUtils.DOWN;
 				break;
 			case SUSPENDED:
 				if (key==SUSPEND)
@@ -481,19 +481,19 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 		{
 		case KeyEvent.VK_RIGHT:
 		case KeyEvent.VK_L:
-			pacKeyDir=ctables.RIGHT;
+			pacKeyDir=LaberintoUtils.RIGHT;
 			// e.consume();
 			break;
 		case KeyEvent.VK_UP:
-			pacKeyDir=ctables.UP;
+			pacKeyDir=LaberintoUtils.UP;
 			// e.consume();
 			break;
 		case KeyEvent.VK_LEFT:
-			pacKeyDir=ctables.LEFT;
+			pacKeyDir=LaberintoUtils.LEFT;
 			// e.consume();
 			break;
 		case KeyEvent.VK_DOWN:
-			pacKeyDir=ctables.DOWN;
+			pacKeyDir=LaberintoUtils.DOWN;
 			// e.consume();
 			break;
 		case KeyEvent.VK_S:

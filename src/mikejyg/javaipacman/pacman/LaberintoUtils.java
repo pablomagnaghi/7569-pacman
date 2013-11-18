@@ -22,11 +22,11 @@ package mikejyg.javaipacman.pacman;
 /**
  * the tables are used to speed up computation
  */
-public class ctables
+public class LaberintoUtils
 {
 	// for direction computation
-	public static final int[] iXDirection={1,0,-1,0};
-	public static final int[] iYDirection={0,-1,0,1};
+	public static final int[] direccionesEjeX={1,0,-1,0};
+	public static final int[] direccionesEjeY={0,-1,0,1};
 	public static final int[] iDirection=
 	{
 		-1,	// 0:
@@ -51,7 +51,7 @@ public class ctables
 	public static final int DOWN=3;
 
 	// the maze difinition string
-	public static final String[] MazeDefine=
+	public static final String[] definicionLaberinto=
 	{
 		"XXXXXXXXXXXXXXXXXXXXX",	// 1
 		"X.........X.........X",	// 2
