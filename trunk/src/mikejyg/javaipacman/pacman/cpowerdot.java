@@ -39,7 +39,7 @@ public class cpowerdot
 	Graphics graphics;
 
 	// the ghosts it controls
-	cghost [] ghosts;
+	Fantasma [] ghosts;
 
 	// the power dot image
 	Image imagePowerDot;
@@ -47,7 +47,7 @@ public class cpowerdot
 	// the blank image
 	Image imageBlank;
 
-	cpowerdot(Window a, Graphics g, cghost [] gh)
+	cpowerdot(Window a, Graphics g, Fantasma [] gh)
 	{
 		applet=a;
 		graphics=g;

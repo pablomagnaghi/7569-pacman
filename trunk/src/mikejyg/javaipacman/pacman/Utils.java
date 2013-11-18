@@ -23,7 +23,7 @@ package mikejyg.javaipacman.pacman;
 /**
  * provide some global public utility functions
  */
-public class cuty
+public class Utils
 {
 	public static int RandDo(int iOdds)
 		// see if it happens within a probability of 1/odds

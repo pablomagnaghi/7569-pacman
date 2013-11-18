@@ -41,7 +41,7 @@ public class cpac
 	Image [][] imagePac;
 
 	// the knowledge of the maze
-	cmaze maze;
+	Laberinto maze;
 
 	// the knowledge of the power dots
 	cpowerdot powerDot;
@@ -49,7 +49,7 @@ public class cpac
 	//    cpacmove cAuto;
 
 	//  cpac(Window a, Graphics g, cmaze m, cpowerdot p, cghost cghost[])
-	cpac(Window a, Graphics g, cmaze m, cpowerdot p)    {
+	cpac(Window a, Graphics g, Laberinto m, cpowerdot p)    {
 		applet=a;
 		graphics=g;
 		maze=m;
@@ -107,8 +107,8 @@ public class cpac
 			}	
 			else    // need to see whether ahead block is OK
 			{
-				if ( mazeOK(iX/16+ ctables.iXDirection[iNextDir],
-						iY/16+ ctables.iYDirection[iNextDir]) )
+				if ( mazeOK(iX/16+ LaberintoUtils.direccionesEjeX[iNextDir],
+						iY/16+ LaberintoUtils.direccionesEjeY[iNextDir]) )
 				{
 					iDir=iNextDir;
 					iNextDir=-1;
@@ -119,31 +119,31 @@ public class cpac
 		{
 
 			// see whether has eaten something
-			switch (maze.iMaze[iY/16][iX/16])
+			switch (maze.laberinto[iY/16][iX/16])
 			{
-			case cmaze.DOT:
+			case Laberinto.DOT:
 				eaten=1;
-				maze.iMaze[iY/16][iX/16]=cmaze.BLANK;	// eat dot
+				maze.laberinto[iY/16][iX/16]=Laberinto.BLANK;	// eat dot
 				maze.iTotalDotcount--;
 				iDotWait=DOT_WAIT;
 				break;
-			case cmaze.POWER_DOT:
+			case Laberinto.POWER_DOT:
 				eaten=2;
 				powerDot.eat(iX/16, iY/16);
-				maze.iMaze[iY/16][iX/16]=cmaze.BLANK;
+				maze.laberinto[iY/16][iX/16]=Laberinto.BLANK;
 				break;
 			}
 
-			if (maze.iMaze[iY/16+ ctables.iYDirection[iDir]]
-			               [iX/16+ ctables.iXDirection[iDir]]==1)
+			if (maze.laberinto[iY/16+ LaberintoUtils.direccionesEjeY[iDir]]
+			               [iX/16+ LaberintoUtils.direccionesEjeX[iDir]]==1)
 			{
 				return(eaten);	// not valid move
 			}
 		}
 		if (iDotWait==0)
 		{
-			iX+= ctables.iXDirection[iDir];
-			iY+= ctables.iYDirection[iDir];
+			iX+= LaberintoUtils.direccionesEjeX[iDir];
+			iY+= LaberintoUtils.direccionesEjeY[iDir];
 		}
 		else	iDotWait--;
 		return(eaten);
@@ -151,7 +151,7 @@ public class cpac
 
 	boolean mazeOK(int iRow, int icol)
 	{
-		if ( (maze.iMaze[icol][iRow] & ( cmaze.WALL | cmaze.DOOR)) ==0)
+		if ( (maze.laberinto[icol][iRow] & ( Laberinto.WALL | Laberinto.DOOR)) ==0)
 			return(true);
 		return(false);
 	}

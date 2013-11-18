@@ -46,17 +46,17 @@ class cpacmove
 	int iValid[]; 
 
 	cpac cPac;
-	cghost [] cGhost;
-	cmaze cMaze;
+	Fantasma [] cGhost;
+	Laberinto cMaze;
 
-	cpacmove(cpac pac, cghost ghost[], cmaze maze)
+	cpacmove(cpac pac, Fantasma ghost[], Laberinto maze)
 	{
 		iDirScore=new int[4];
 
 		iValid=new int [4];
 		cPac=pac;
 
-		cGhost=new cghost[4];
+		cGhost=new Fantasma[4];
 		for (int i=0; i<4; i++)
 			cGhost[i]=ghost[i];
 
@@ -108,8 +108,8 @@ class cpacmove
 
 			if ( cPac.iX%16 == 0 && cPac.iY%16==0)
 			{
-				if ( cPac.mazeOK(cPac.iX/16 + ctables.iXDirection[iHDir],
-						cPac.iY/16 + ctables.iYDirection[iHDir]) )
+				if ( cPac.mazeOK(cPac.iX/16 + LaberintoUtils.direccionesEjeX[iHDir],
+						cPac.iY/16 + LaberintoUtils.direccionesEjeY[iHDir]) )
 					return(iHDir);
 			}
 			else
@@ -133,8 +133,8 @@ class cpacmove
 		// calculate ghosts one by one
 		for (int i=0; i<4; i++)
 		{
-			iXDis=cGhost[i].iX - cPac.iX;
-			iYDis=cGhost[i].iY - cPac.iY;
+			iXDis=cGhost[i].posX - cPac.iX;
+			iYDis=cGhost[i].posY - cPac.iY;
 
 			iDis=Math.sqrt(iXDis*iXDis+iYDis*iYDis);
 
@@ -153,20 +153,20 @@ class cpacmove
 
 				if (iXDis >= 0)
 				{
-					iDirScore[ctables.LEFT] += iXFact;
+					iDirScore[LaberintoUtils.LEFT] += iXFact;
 				}
 				else
 				{
-					iDirScore[ctables.RIGHT] += -iXFact;
+					iDirScore[LaberintoUtils.RIGHT] += -iXFact;
 				}
 
 				if (iYDis >= 0)
 				{
-					iDirScore[ctables.UP] += iYFact;
+					iDirScore[LaberintoUtils.UP] += iYFact;
 				}
 				else
 				{
-					iDirScore[ctables.DOWN] += -iYFact;
+					iDirScore[LaberintoUtils.DOWN] += -iYFact;
 				}
 			}
 		}
@@ -183,10 +183,10 @@ class cpacmove
 		dShortest=1000;
 
 		// find the nearest dot
-		for (i=0; i < cmaze.HEIGHT; i++)
-			for (j=0; j < cmaze.WIDTH; j++)
+		for (i=0; i < Laberinto.HEIGHT; i++)
+			for (j=0; j < Laberinto.WIDTH; j++)
 			{
-				if (cMaze.iMaze[i][j]==cmaze.DOT)
+				if (cMaze.laberinto[i][j]==Laberinto.DOT)
 				{
 					iXDis=j*16-8-cPac.iX;
 					iYDis=i*16-8-cPac.iY;
@@ -207,20 +207,20 @@ class cpacmove
 
 		if (iX > 0)
 		{
-			iDirScore[ctables.RIGHT] += iFact;
+			iDirScore[LaberintoUtils.RIGHT] += iFact;
 		}
 		else if (iX < 0)
 		{
-			iDirScore[ctables.LEFT] += iFact;
+			iDirScore[LaberintoUtils.LEFT] += iFact;
 		}
 
 		if (iY > 0)
 		{
-			iDirScore[ctables.DOWN] += iFact;
+			iDirScore[LaberintoUtils.DOWN] += iFact;
 		}
 		else if (iY<0)
 		{
-			iDirScore[ctables.UP] += iFact;
+			iDirScore[LaberintoUtils.UP] += iFact;
 		}
 	}
 

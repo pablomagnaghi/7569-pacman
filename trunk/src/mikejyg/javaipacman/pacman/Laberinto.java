@@ -22,7 +22,7 @@ package mikejyg.javaipacman.pacman;
 import java.awt.*;
 
 /* define the maze */
-public class cmaze
+public class Laberinto
 {
 	// constant definitions
 	static final int BLANK=0;
@@ -52,10 +52,10 @@ public class cmaze
 	int iTotalDotcount;
 
 	// the status of maze
-	int[][] iMaze;
+	int[][] laberinto;
 
 	// initialize the maze
-	cmaze(Window a, Graphics g)
+	Laberinto(Window a, Graphics g)
 	{
 		// setup associations
 		applet=a;
@@ -65,7 +65,7 @@ public class cmaze
 		imageDot=applet.createImage(2,2);
 
 		// create data
-		iMaze=new int[HEIGHT][WIDTH];
+		laberinto=new int[HEIGHT][WIDTH];
 	}
 
 	public void start()
@@ -75,7 +75,7 @@ public class cmaze
 		for (i=0; i<HEIGHT; i++)
 			for (j=0; j<WIDTH; j++)
 			{
-				switch (ctables.MazeDefine[i].charAt(j))
+				switch (LaberintoUtils.definicionLaberinto[i].charAt(j))
 				{
 				case ' ':
 					k=BLANK;
@@ -98,7 +98,7 @@ public class cmaze
 					iTotalDotcount++;
 					break;
 				}
-				iMaze[i][j]=k;
+				laberinto[i][j]=k;
 			}
 		// create initial maze image
 		createImage();	
@@ -117,7 +117,7 @@ public class cmaze
 		for (i=0; i<HEIGHT; i++)
 			for (j=0; j<WIDTH; j++)
 			{
-				if (iMaze[i][j]==DOT)
+				if (laberinto[i][j]==DOT)
 					graphics.drawImage(imageDot, j*16+7,i*16+7,applet);
 			}
 	}
@@ -139,7 +139,7 @@ public class cmaze
 
 	public void DrawDot(int icol, int iRow)
 	{
-		if (iMaze[iRow][icol]==DOT)
+		if (laberinto[iRow][icol]==DOT)
 			graphics.drawImage(imageDot, icol*16+7,iRow*16+7,applet);
 	}	
 
@@ -154,39 +154,39 @@ public class cmaze
 		{
 			for (j=0; j<WIDTH; j++)
 			{
-				for (iDir=ctables.RIGHT; iDir<=ctables.DOWN; iDir++)
+				for (iDir=LaberintoUtils.RIGHT; iDir<=LaberintoUtils.DOWN; iDir++)
 				{
-					if (iMaze[i][j]==DOOR)
+					if (laberinto[i][j]==DOOR)
 					{
 						g.drawLine(j*16,i*16+8,j*16+16,i*16+8);
 						continue;
 					}
-					if (iMaze[i][j]!=WALL)	continue;
+					if (laberinto[i][j]!=WALL)	continue;
 					switch (iDir)
 					{
-					case ctables.UP:
+					case LaberintoUtils.UP:
 						if (i==0)	break;
-						if (iMaze[i-1][j]==WALL)
+						if (laberinto[i-1][j]==WALL)
 							break;
-						DrawBoundary(g, j, i-1, ctables.DOWN);
+						DrawBoundary(g, j, i-1, LaberintoUtils.DOWN);
 						break;
-					case ctables.RIGHT:
+					case LaberintoUtils.RIGHT:
 						if (j==WIDTH-1)	break;
-						if (iMaze[i][j+1]==WALL)
+						if (laberinto[i][j+1]==WALL)
 							break;
-						DrawBoundary(g, j+1,i, ctables.LEFT);
+						DrawBoundary(g, j+1,i, LaberintoUtils.LEFT);
 						break;
-					case ctables.DOWN:
+					case LaberintoUtils.DOWN:
 						if (i==HEIGHT-1)	break;
-						if (iMaze[i+1][j]==WALL)
+						if (laberinto[i+1][j]==WALL)
 							break;
-						DrawBoundary(g, j,i+1, ctables.UP);
+						DrawBoundary(g, j,i+1, LaberintoUtils.UP);
 						break;
-					case ctables.LEFT:
+					case LaberintoUtils.LEFT:
 						if (j==0)	break;
-						if (iMaze[i][j-1]==WALL)
+						if (laberinto[i][j-1]==WALL)
 							break;
-						DrawBoundary(g, j-1,i, ctables.RIGHT);
+						DrawBoundary(g, j-1,i, LaberintoUtils.RIGHT);
 						break;
 					default:	
 					}
@@ -203,11 +203,11 @@ public class cmaze
 
 		switch (iDir)
 		{
-		case ctables.LEFT:
+		case LaberintoUtils.LEFT:
 			// draw lower half segment 
-			if (iMaze[row+1][col]!=WALL)
+			if (laberinto[row+1][col]!=WALL)
 				// down empty
-				if (iMaze[row+1][col-1]!=WALL)
+				if (laberinto[row+1][col-1]!=WALL)
 					// left-down empty
 				{
 					//arc(x-8,y+8,270,0,6);
@@ -224,9 +224,9 @@ public class cmaze
 			}
 
 			// Draw upper half segment
-			if (iMaze[row-1][col]!=WALL)
+			if (laberinto[row-1][col]!=WALL)
 				// upper empty
-				if (iMaze[row-1][col-1]!=WALL)
+				if (laberinto[row-1][col-1]!=WALL)
 					// upper-left empty
 				{
 					//						arc(x-8,y+7,0,90,6);
@@ -243,11 +243,11 @@ public class cmaze
 			}	
 			break;
 
-		case ctables.RIGHT:
+		case LaberintoUtils.RIGHT:
 			// draw lower half segment 
-			if (iMaze[row+1][col]!=WALL)
+			if (laberinto[row+1][col]!=WALL)
 				// down empty
-				if (iMaze[row+1][col+1]!=WALL)
+				if (laberinto[row+1][col+1]!=WALL)
 					// down-right empty
 				{
 					//						arc(x+16+7,y+8,180,270,6);
@@ -263,9 +263,9 @@ public class cmaze
 				g.drawLine(x+17,y+8,x+17,y+17);
 			}	
 			// Draw upper half segment 
-			if (iMaze[row-1][col]!=WALL)
+			if (laberinto[row-1][col]!=WALL)
 				// upper empty
-				if (iMaze[row-1][col+1]!=WALL)
+				if (laberinto[row-1][col+1]!=WALL)
 					// upper-right empty
 				{
 					//						arc(x+16+7,y+7,90,180,6);
@@ -282,11 +282,11 @@ public class cmaze
 			}
 			break;
 
-		case ctables.UP:
+		case LaberintoUtils.UP:
 			// draw left half segment 
-			if (iMaze[row][col-1]!=WALL)
+			if (laberinto[row][col-1]!=WALL)
 				// left empty
-				if (iMaze[row-1][col-1]!=WALL)
+				if (laberinto[row-1][col-1]!=WALL)
 					// left-upper empty
 				{
 					//  arc(x+7,y-8,180,270,6);
@@ -298,9 +298,9 @@ public class cmaze
 				}
 
 			// Draw right half segment
-			if (iMaze[row][col+1]!=WALL)
+			if (laberinto[row][col+1]!=WALL)
 				// right empty
-				if (iMaze[row-1][col+1]!=WALL)
+				if (laberinto[row-1][col+1]!=WALL)
 					// right-upper empty
 				{
 					//						arc(x+8,y-8,270,0,6);
@@ -312,11 +312,11 @@ public class cmaze
 				}
 			break;
 
-		case ctables.DOWN:
+		case LaberintoUtils.DOWN:
 			// draw left half segment
-			if (iMaze[row][col-1]!=WALL)
+			if (laberinto[row][col-1]!=WALL)
 				// left empty
-				if (iMaze[row+1][col-1]!=WALL)
+				if (laberinto[row+1][col-1]!=WALL)
 					// left-down empty
 				{
 					//						arc(x+7,y+16+7,90,180,6);
@@ -328,9 +328,9 @@ public class cmaze
 				}
 
 			// Draw right half segment
-			if (iMaze[row][col+1]!=WALL)
+			if (laberinto[row][col+1]!=WALL)
 				// right empty
-				if (iMaze[row+1][col+1]!=WALL)
+				if (laberinto[row+1][col+1]!=WALL)
 					// right-down empty
 				{
 					//						arc(x+8,y+16+7,0,90,6);
