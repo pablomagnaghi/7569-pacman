@@ -19,8 +19,21 @@
 
 package mikejyg.javaipacman.pacman;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Menu;
+import java.awt.MenuBar;
+import java.awt.MenuItem;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 /**
  * the main class of the pacman game
@@ -31,6 +44,7 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 	private static final long serialVersionUID = 3582431359568375379L;
 	// the timer
 	Thread timer;
+	long time_start, time_end;
 	int timerPeriod=12;  // in miliseconds
 
 	// the timer will increment this variable to signal a frame
@@ -441,8 +455,10 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 			switch (gameState)
 			{
 			case STARTWAIT: 
-				if (pacKeyDir==LaberintoUtils.UP)	// the key to start game
+				if (pacKeyDir==LaberintoUtils.UP){	// the key to start game
 					gameState=RUNNING;
+					time_start = System.currentTimeMillis();
+				}
 				else
 					return;
 				break;
@@ -453,6 +469,8 @@ implements Runnable, KeyListener, ActionListener, WindowListener
 					move();
 				break;
 			case DEADWAIT:
+				time_end = System.currentTimeMillis();
+				System.out.println("Tardó "+ ( time_end - time_start ) +" milliseconds");
 				if (pacRemain>0)
 					startRound();
 				else

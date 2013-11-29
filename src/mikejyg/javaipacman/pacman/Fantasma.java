@@ -201,12 +201,14 @@ public class Fantasma
 		int totalPesoDirecciones=0;
 		int[] pesoDireccion=new int [4];
 		ArrayList<Integer> posibilidad = new ArrayList<Integer>();
-
+		System.out.println("Pacman X: " + pacmanPosX/16 + ", Pacman Y: " + pacmanPosY/16);
+		//System.out.println("Fantasma X: " + posX/16 + ", Fantasma Y: " + posY/16);
 		for (i=0; i<4; i++)
 		{
 			pesoDireccion[i]=0;
 			celda=laberinto.laberinto[posY/16 + LaberintoUtils.direccionesEjeY[i]]
 			              [posX/16+ LaberintoUtils.direccionesEjeX[i]];
+			
 			if (celda!=Laberinto.WALL && i!= LaberintoUtils.iBack[direccion] && celda!= Laberinto.DOOR )
 				// door is not accessible for OUT
 			{
@@ -270,6 +272,8 @@ public class Fantasma
 			iRand=Utils.RandSelect(totalPesoDirecciones);
 			if (iRand>=totalPesoDirecciones)
 				throw new Error("iRand out of range");
+			Integer distanciaMin = 9999;
+			Integer min = 0;
 			for (i=0; i<4; i++)
 			{
 				celda=laberinto.laberinto[posY/16+ LaberintoUtils.direccionesEjeY[i]]
@@ -277,6 +281,11 @@ public class Fantasma
 				if (celda!=Laberinto.WALL && i!= LaberintoUtils.iBack[direccion] && celda!= Laberinto.DOOR )
 				{	
 					iRand-=pesoDireccion[i];
+					Integer distanciaAPacman = this.distanciaAPacman(pacmanPosX, pacmanPosY, i);
+					if (distanciaAPacman < distanciaMin){
+						min = i;
+						distanciaMin = distanciaAPacman;
+					}
 					if (iRand<0)
 						// the right selection
 					{
@@ -284,13 +293,26 @@ public class Fantasma
 					}
 				}
 			}
-			iRand=Utils.RandSelect(posibilidad.size());
-			direccion = posibilidad.get(iRand);
+			//
+			direccion = min;
+			/*
+			 * Seleccion random de direccion
+			 */
+			/*iRand=Utils.RandSelect(posibilidad.size());
+			direccion = posibilidad.get(iRand);*/
 		}
 		else	
 			throw new Error("iDirTotal out of range");
 		// exit(1);
 		return(direccion);
+	}
+	
+	public Integer distanciaAPacman(Integer pacmanX, Integer pacmanY, Integer direccion){
+		Integer nextX = posX + LaberintoUtils.direccionesEjeX[direccion];
+		Integer nextY = posY + LaberintoUtils.direccionesEjeY[direccion];
+		Integer distanciaX = Math.abs(pacmanX - nextX);
+		Integer distanciaY = Math.abs(pacmanY - nextY);
+		return distanciaX + distanciaY;
 	}
 
 	public void blind()
@@ -409,28 +431,28 @@ public class Fantasma
 					 * Si el fantasma esta mas a la derecha que el pacman, apoyamos ese movimiento,
 					 * sino no (va hacia el pacman)
 					 */
-					iDirCount[i]+=pacmanPosX<posX?
+					iDirCount[i]+=pacmanPosX>posX?
 							POS_FACTOR:0;
 					break;
 				case 1:	// up
 					/*
 					 * si la posicion del pacman esta mas abajo que el fantama, me muevo p arriba
 					 */
-					iDirCount[i]+=pacmanPosY>posY?
+					iDirCount[i]+=pacmanPosY<posY?
 							POS_FACTOR:0;
 					break;
 				case 2:	// left
 					/*
 					 * si la posicion del pacman está mas a la derecha, tira mover a la izq
 					 */
-					iDirCount[i]+=pacmanPosX>posX?
+					iDirCount[i]+=pacmanPosX<posX?
 							POS_FACTOR:0;
 					break;
 				case 3:	// down
 					/*
 					 * Si el pacman esta mas arriba, muevo para abajo
 					 */
-					iDirCount[i]+=pacmanPosY<posY?
+					iDirCount[i]+=pacmanPosY>posY?
 							POS_FACTOR:0;
 					break;
 				}
