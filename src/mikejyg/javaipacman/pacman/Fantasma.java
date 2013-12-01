@@ -23,6 +23,8 @@ import java.lang.Error;
 import java.util.ArrayList;
 import java.awt.*;
 
+import javax.crypto.spec.PSource;
+
 public class Fantasma
 {
 	final int IN=0;
@@ -56,13 +58,14 @@ public class Fantasma
 	Image imageGhost; 
 	Image imageBlind;
 	Image imageEye;
+	Color color;
 
 	Fantasma(Window a, Graphics g, Laberinto m, Color color)
 	{
 		applet=a;
 		graphics=g;
 		laberinto=m;
-
+		this.color = color;
 		imageGhost=applet.createImage(18,18);
 		cimage.drawGhost(imageGhost, 0, color);
 
@@ -193,117 +196,63 @@ public class Fantasma
 		return(direccion);	
 	}
 
-	public int moverFantasmaFueraDeJaula(int pacmanPosX, int pacmanPosY, int pacmanDireccion)
-	// count available directions
-	throws Error
-	{
-		int celda,i,iRand;
-		int totalPesoDirecciones=0;
-		int[] pesoDireccion=new int [4];
+	public ArrayList<Integer> posiblesMovimientos(int pacmanPosX, int pacmanPosY, int pacmanDireccion){
+		int celda,i;
 		ArrayList<Integer> posibilidad = new ArrayList<Integer>();
-		System.out.println("Pacman X: " + pacmanPosX/16 + ", Pacman Y: " + pacmanPosY/16);
-		//System.out.println("Fantasma X: " + posX/16 + ", Fantasma Y: " + posY/16);
+
 		for (i=0; i<4; i++)
 		{
-			pesoDireccion[i]=0;
 			celda=laberinto.laberinto[posY/16 + LaberintoUtils.direccionesEjeY[i]]
 			              [posX/16+ LaberintoUtils.direccionesEjeX[i]];
 			
 			if (celda!=Laberinto.WALL && i!= LaberintoUtils.iBack[direccion] && celda!= Laberinto.DOOR )
-				// door is not accessible for OUT
 			{
 				posibilidad.add(i);
-				pesoDireccion[i]++;
-				if (direccion==pacmanDireccion){
-					pesoDireccion[i]+=DIR_FACTOR;	
-				} else {
-					pesoDireccion[i]+=0;
-				}
-				switch (i)
-				{
-				case 0:	// right
-					/*
-					 * Si el pacman esta mas a la derecha, pondero mover a la derecha
-					 */
-					if (pacmanPosX > posX){
-						pesoDireccion[i]+=POS_FACTOR;	
-					} else {
-						pesoDireccion[i]+=0;
-					}
-					break;
-				case 1:	// up
-					/*
-					 * Si el pacman esta mas arriba que ell fantasma, pondero UP
-					 */
-					if (pacmanPosY < posY){
-						pesoDireccion[i]+=POS_FACTOR;	
-					} else {
-						pesoDireccion[i]+=0;
-					}
-					break;
-				case 2:	// left
-					/*
-					 * Si el pacman esta a la izq, pondero izq
-					 */
-					if (pacmanPosX<posX){
-						pesoDireccion[i]+=POS_FACTOR;	
-					} else {
-						pesoDireccion[i]+=0;
-					}
-					break;
-				case 3:	// down
-					/*
-					 * Si el pacman esta mas abajo, pondero ir para abajo
-					 */
-					if (pacmanPosY>posY){
-						pesoDireccion[i]+=POS_FACTOR;	
-					} else {
-						pesoDireccion[i]+=0;
-					}
-					break;
-				}
-				totalPesoDirecciones+=pesoDireccion[i];
 			}
-		}	
-		// randomly select a direction
-		if (totalPesoDirecciones!=0)
-		{	
-			
-			iRand=Utils.RandSelect(totalPesoDirecciones);
-			if (iRand>=totalPesoDirecciones)
-				throw new Error("iRand out of range");
-			Integer distanciaMin = 9999;
-			Integer min = 0;
-			for (i=0; i<4; i++)
-			{
-				celda=laberinto.laberinto[posY/16+ LaberintoUtils.direccionesEjeY[i]]
-				              [posX/16+ LaberintoUtils.direccionesEjeX[i]];
-				if (celda!=Laberinto.WALL && i!= LaberintoUtils.iBack[direccion] && celda!= Laberinto.DOOR )
-				{	
-					iRand-=pesoDireccion[i];
+		}
+		return posibilidad;
+	}
+	
+	public int moverFantasmaFueraDeJaula(int pacmanPosX, int pacmanPosY, int pacmanDireccion)
+	// count available directions
+	throws Error
+	{
+		ArrayList<Integer> posibilidad = posiblesMovimientos(pacmanPosX, pacmanPosY, pacmanDireccion);
+		if (posibilidad.size()>0){
+			if (LaberintoUtils.politica == 1){
+				Integer distanciaMin = 9999;
+				Integer min = 0;		
+				for (Integer i : posibilidad) {
 					Integer distanciaAPacman = this.distanciaAPacman(pacmanPosX, pacmanPosY, i);
 					if (distanciaAPacman < distanciaMin){
 						min = i;
 						distanciaMin = distanciaAPacman;
 					}
-					if (iRand<0)
-						// the right selection
-					{
-						direccion=i;	break;
+				}
+				direccion = min;
+			}
+			else if (LaberintoUtils.politica == 2){
+				direccion = posibilidad.get(0);
+			} else if (LaberintoUtils.politica == 3){
+				int iRand= Utils.RandSelect(posibilidad.size());
+				System.out.println("posi " + posibilidad.size());
+				System.out.println("Rand " + iRand);
+				direccion = posibilidad.get(iRand);
+			} else if (LaberintoUtils.politica == 4){
+				if (this.color==Color.red || this.color == Color.blue){
+					direccion = posibilidad.get(0);
+				} else {
+					if (posibilidad.size()>1){
+						direccion = posibilidad.get(1);
+					} else {
+						direccion = posibilidad.get(0);
 					}
 				}
-			}
-			//
-			direccion = min;
-			/*
-			 * Seleccion random de direccion
-			 */
-			/*iRand=Utils.RandSelect(posibilidad.size());
-			direccion = posibilidad.get(iRand);*/
+			} 
+
 		}
 		else	
 			throw new Error("iDirTotal out of range");
-		// exit(1);
 		return(direccion);
 	}
 	
@@ -431,28 +380,28 @@ public class Fantasma
 					 * Si el fantasma esta mas a la derecha que el pacman, apoyamos ese movimiento,
 					 * sino no (va hacia el pacman)
 					 */
-					iDirCount[i]+=pacmanPosX>posX?
+					iDirCount[i]+=pacmanPosX<posX?
 							POS_FACTOR:0;
 					break;
 				case 1:	// up
 					/*
 					 * si la posicion del pacman esta mas abajo que el fantama, me muevo p arriba
 					 */
-					iDirCount[i]+=pacmanPosY<posY?
+					iDirCount[i]+=pacmanPosY>posY?
 							POS_FACTOR:0;
 					break;
 				case 2:	// left
 					/*
 					 * si la posicion del pacman está mas a la derecha, tira mover a la izq
 					 */
-					iDirCount[i]+=pacmanPosX<posX?
+					iDirCount[i]+=pacmanPosX>posX?
 							POS_FACTOR:0;
 					break;
 				case 3:	// down
 					/*
 					 * Si el pacman esta mas arriba, muevo para abajo
 					 */
-					iDirCount[i]+=pacmanPosY>posY?
+					iDirCount[i]+=pacmanPosY<posY?
 							POS_FACTOR:0;
 					break;
 				}

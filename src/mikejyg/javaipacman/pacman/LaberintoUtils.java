@@ -40,6 +40,7 @@ public class LaberintoUtils
 		-1,     // 8
 		3     	// 9: x=0, y=1
 	};
+	public static final Integer politica = 1;
 
 	// backward direction
 	public static final int[] iBack={2,3,0,1};
